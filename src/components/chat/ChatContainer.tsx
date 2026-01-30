@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef, useEffect, useCallback, useState, type ReactNode } from 'react';
+import { useRef, useEffect, useCallback, useState, useMemo, type ReactNode } from 'react';
 import { cn } from '@/lib/utils';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import type { Message } from '@/types';
@@ -9,7 +9,7 @@ import { ChatInput } from './ChatInput';
 import { WelcomeScreen, QuickPreferences } from '@/components/welcome';
 import { Plane } from 'lucide-react';
 
-type ViewState = 'welcome' | 'preferences' | 'chat';
+type ViewOverride = 'preferences' | null;
 
 interface ChatContainerProps {
   messages: Message[];
@@ -40,16 +40,15 @@ export function ChatContainer({
 }: ChatContainerProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
-  const [viewState, setViewState] = useState<ViewState>('welcome');
+  // Only store the override state (preferences), derive the rest
+  const [viewOverride, setViewOverride] = useState<ViewOverride>(null);
   
-  // Reset view state when starting a new conversation
-  useEffect(() => {
-    if (messages.length === 0 && isNewUser) {
-      setViewState('welcome');
-    } else if (messages.length > 0) {
-      setViewState('chat');
-    }
-  }, [messages.length, isNewUser]);
+  // Derive the actual view state from props and override
+  const viewState = useMemo(() => {
+    if (viewOverride === 'preferences') return 'preferences';
+    if (messages.length > 0) return 'chat';
+    return 'welcome';
+  }, [viewOverride, messages.length]);
 
   // Auto-scroll to bottom when new messages arrive
   const scrollToBottom = useCallback(() => {
@@ -61,12 +60,12 @@ export function ChatContainer({
   }, [messages, isTyping, scrollToBottom]);
 
   const handleStartConversation = useCallback((prompt: string) => {
-    setViewState('chat');
+    setViewOverride(null);
     onSendMessage(prompt);
   }, [onSendMessage]);
 
   const handlePersonalize = useCallback(() => {
-    setViewState('preferences');
+    setViewOverride('preferences');
   }, []);
 
   const handlePreferencesComplete = useCallback((prefs: {
@@ -74,12 +73,12 @@ export function ChatContainer({
     travelStyle?: 'solo' | 'couple' | 'family' | 'friends';
     interests?: ('relaxation' | 'adventure' | 'culture' | 'nightlife')[];
   }) => {
-    setViewState('welcome');
+    setViewOverride(null);
     onPreferencesComplete?.(prefs);
   }, [onPreferencesComplete]);
 
   const handleSkipPreferences = useCallback(() => {
-    setViewState('welcome');
+    setViewOverride(null);
   }, []);
 
   const renderContent = () => {

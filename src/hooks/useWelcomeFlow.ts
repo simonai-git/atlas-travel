@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useCallback, useSyncExternalStore } from 'react';
 
 // Preference types matching QuickPreferences component
 type BudgetLevel = 'budget' | 'moderate' | 'luxury';
@@ -39,31 +39,49 @@ interface UseWelcomeFlowReturn {
   clearPendingPrompt: () => void;
 }
 
+// Helper to safely read from localStorage
+function getStoredData(): { preferences: UserPreferences; isNewUser: boolean } {
+  if (typeof window === 'undefined') {
+    return { preferences: {}, isNewUser: true };
+  }
+  try {
+    const savedPrefs = localStorage.getItem(STORAGE_KEY);
+    const onboardingDone = localStorage.getItem(ONBOARDING_KEY);
+    return {
+      preferences: savedPrefs ? JSON.parse(savedPrefs) : {},
+      isNewUser: onboardingDone !== 'true',
+    };
+  } catch {
+    return { preferences: {}, isNewUser: true };
+  }
+}
+
+// Create a simple store for syncing with localStorage
+let listeners: Array<() => void> = [];
+function subscribe(listener: () => void) {
+  listeners = [...listeners, listener];
+  return () => {
+    listeners = listeners.filter((l) => l !== listener);
+  };
+}
+function getSnapshot() {
+  return getStoredData();
+}
+function getServerSnapshot() {
+  return { preferences: {}, isNewUser: true };
+}
+
 export function useWelcomeFlow(): UseWelcomeFlowReturn {
-  const [currentStep, setCurrentStep] = useState<WelcomeStep>('welcome');
-  const [preferences, setPreferences] = useState<UserPreferences>({});
-  const [isNewUser, setIsNewUser] = useState(true);
+  // Use useSyncExternalStore to read initial state without setState in effect
+  const storedData = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
+  
+  const [currentStep, setCurrentStep] = useState<WelcomeStep>(() => 
+    storedData.isNewUser ? 'welcome' : 'complete'
+  );
+  const [preferences, setPreferences] = useState<UserPreferences>(storedData.preferences);
+  const [isNewUser, setIsNewUser] = useState(storedData.isNewUser);
   const [showPreferences, setShowPreferences] = useState(false);
   const [pendingPrompt, setPendingPrompt] = useState<string | null>(null);
-
-  // Load saved preferences and onboarding state on mount
-  useEffect(() => {
-    try {
-      const savedPrefs = localStorage.getItem(STORAGE_KEY);
-      const onboardingDone = localStorage.getItem(ONBOARDING_KEY);
-      
-      if (savedPrefs) {
-        setPreferences(JSON.parse(savedPrefs));
-      }
-      
-      if (onboardingDone === 'true') {
-        setIsNewUser(false);
-        setCurrentStep('complete');
-      }
-    } catch (e) {
-      console.warn('Failed to load preferences from localStorage:', e);
-    }
-  }, []);
 
   // Save preferences to localStorage
   const savePreferences = useCallback((prefs: UserPreferences) => {

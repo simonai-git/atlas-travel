@@ -188,7 +188,6 @@ export async function initializeSchema(): Promise<void> {
   const client = await getClient();
   try {
     await client.query(SCHEMA_SQL);
-    console.log('Database schema initialized successfully');
   } finally {
     client.release();
   }

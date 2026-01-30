@@ -30,6 +30,7 @@ export function HotelCard({ data, className }: HotelCardProps) {
       {/* Image section */}
       {data.image_url ? (
         <div className="relative h-32 w-full overflow-hidden bg-zinc-700">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={data.image_url}
             alt={data.name}
