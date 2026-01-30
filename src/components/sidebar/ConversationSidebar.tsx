@@ -16,9 +16,10 @@ import {
   Plus,
   Trash2,
   Menu,
-  X,
   ChevronLeft,
   ChevronRight,
+  Plane,
+  Sparkles,
 } from 'lucide-react';
 
 export interface ConversationItem {
@@ -102,10 +103,24 @@ function DesktopSidebar({
             <div className="size-6 animate-spin rounded-full border-2 border-zinc-600 border-t-teal-500" />
           </div>
         ) : conversations.length === 0 ? (
-          <div className="py-8 text-center">
-            <MessageSquare className="mx-auto size-8 text-zinc-600 mb-2" />
-            {!isCollapsed && (
-              <p className="text-sm text-zinc-500">No conversations yet</p>
+          <div className="py-8 text-center px-3">
+            {isCollapsed ? (
+              <Plane className="mx-auto size-6 text-teal-500/60" />
+            ) : (
+              <>
+                <div className="relative inline-flex mb-3">
+                  <div className="flex size-12 items-center justify-center rounded-xl bg-gradient-to-br from-teal-500/20 to-cyan-600/20 border border-teal-500/20">
+                    <Plane className="size-6 text-teal-500" />
+                  </div>
+                  <div className="absolute -right-1 -top-1 flex size-5 items-center justify-center rounded-full bg-gradient-to-br from-amber-400 to-orange-500">
+                    <Sparkles className="size-2.5 text-white" />
+                  </div>
+                </div>
+                <p className="text-sm font-medium text-zinc-300 mb-1">Ready for adventure?</p>
+                <p className="text-xs text-zinc-500 leading-relaxed">
+                  Start a new chat to plan your next trip with Atlas
+                </p>
+              </>
             )}
           </div>
         ) : (
@@ -216,9 +231,19 @@ function MobileDrawer({
               <div className="size-6 animate-spin rounded-full border-2 border-zinc-600 border-t-teal-500" />
             </div>
           ) : conversations.length === 0 ? (
-            <div className="py-8 text-center">
-              <MessageSquare className="mx-auto size-8 text-zinc-600 mb-2" />
-              <p className="text-sm text-zinc-500">No conversations yet</p>
+            <div className="py-8 text-center px-3">
+              <div className="relative inline-flex mb-3">
+                <div className="flex size-14 items-center justify-center rounded-xl bg-gradient-to-br from-teal-500/20 to-cyan-600/20 border border-teal-500/20">
+                  <Plane className="size-7 text-teal-500" />
+                </div>
+                <div className="absolute -right-1 -top-1 flex size-6 items-center justify-center rounded-full bg-gradient-to-br from-amber-400 to-orange-500">
+                  <Sparkles className="size-3 text-white" />
+                </div>
+              </div>
+              <p className="text-sm font-medium text-zinc-300 mb-1">Ready for adventure?</p>
+              <p className="text-xs text-zinc-500 leading-relaxed">
+                Start a new chat to plan your perfect trip with Atlas
+              </p>
             </div>
           ) : (
             <div className="space-y-1 pb-4">

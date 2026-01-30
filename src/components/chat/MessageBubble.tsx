@@ -5,7 +5,7 @@ import { cn } from '@/lib/utils';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import type { Message } from '@/types';
 import { Plane, User } from 'lucide-react';
-import { parseMessage, type MessageSegment, type CardSegment } from '@/lib/parseMessage';
+import { parseMessage, type CardSegment } from '@/lib/parseMessage';
 import { HotelCard, FlightCard, ActivityCard } from '@/components/cards';
 import type { TravelCard } from '@/lib/db/schema';
 

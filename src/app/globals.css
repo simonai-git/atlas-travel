@@ -123,3 +123,42 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* Welcome screen animations */
+@keyframes fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-5px);
+  }
+}
+
+.animate-fade-in {
+  animation: fade-in 0.5s ease-out;
+}
+
+.animate-float {
+  animation: float 3s ease-in-out infinite;
+}
+
+/* Staggered animation for starter prompts */
+.grid > button:nth-child(1) { animation-delay: 0.1s; }
+.grid > button:nth-child(2) { animation-delay: 0.15s; }
+.grid > button:nth-child(3) { animation-delay: 0.2s; }
+.grid > button:nth-child(4) { animation-delay: 0.25s; }
+
+.grid > button {
+  animation: fade-in 0.4s ease-out backwards;
+}

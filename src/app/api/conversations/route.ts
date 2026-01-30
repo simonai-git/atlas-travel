@@ -46,6 +46,18 @@ export async function GET(request: NextRequest) {
 
 // POST /api/conversations - Create a new conversation
 export async function POST(request: NextRequest) {
+  // Check if database is configured
+  if (!process.env.DATABASE_URL) {
+    // Return mock conversation for development without database
+    const { title } = await request.json();
+    return NextResponse.json({
+      id: `local-${Date.now()}`,
+      title: title || 'New Conversation',
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    });
+  }
+  
   try {
     const body = await request.json();
     const { title } = body;

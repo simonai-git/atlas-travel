@@ -1,12 +1,15 @@
 'use client';
 
-import { useRef, useEffect, useCallback, type ReactNode } from 'react';
+import { useRef, useEffect, useCallback, useState, type ReactNode } from 'react';
 import { cn } from '@/lib/utils';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import type { Message } from '@/types';
 import { MessageList } from './MessageList';
 import { ChatInput } from './ChatInput';
+import { WelcomeScreen, QuickPreferences } from '@/components/welcome';
 import { Plane } from 'lucide-react';
+
+type ViewState = 'welcome' | 'preferences' | 'chat';
 
 interface ChatContainerProps {
   messages: Message[];
@@ -16,6 +19,12 @@ interface ChatContainerProps {
   disabled?: boolean;
   className?: string;
   mobileMenuTrigger?: ReactNode;
+  isNewUser?: boolean;
+  onPreferencesComplete?: (prefs: {
+    budget?: 'budget' | 'moderate' | 'luxury';
+    travelStyle?: 'solo' | 'couple' | 'family' | 'friends';
+    interests?: ('relaxation' | 'adventure' | 'culture' | 'nightlife')[];
+  }) => void;
 }
 
 export function ChatContainer({
@@ -26,9 +35,21 @@ export function ChatContainer({
   disabled = false,
   className,
   mobileMenuTrigger,
+  isNewUser = false,
+  onPreferencesComplete,
 }: ChatContainerProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
+  const [viewState, setViewState] = useState<ViewState>('welcome');
+  
+  // Reset view state when starting a new conversation
+  useEffect(() => {
+    if (messages.length === 0 && isNewUser) {
+      setViewState('welcome');
+    } else if (messages.length > 0) {
+      setViewState('chat');
+    }
+  }, [messages.length, isNewUser]);
 
   // Auto-scroll to bottom when new messages arrive
   const scrollToBottom = useCallback(() => {
@@ -38,6 +59,68 @@ export function ChatContainer({
   useEffect(() => {
     scrollToBottom();
   }, [messages, isTyping, scrollToBottom]);
+
+  const handleStartConversation = useCallback((prompt: string) => {
+    setViewState('chat');
+    onSendMessage(prompt);
+  }, [onSendMessage]);
+
+  const handlePersonalize = useCallback(() => {
+    setViewState('preferences');
+  }, []);
+
+  const handlePreferencesComplete = useCallback((prefs: {
+    budget?: 'budget' | 'moderate' | 'luxury';
+    travelStyle?: 'solo' | 'couple' | 'family' | 'friends';
+    interests?: ('relaxation' | 'adventure' | 'culture' | 'nightlife')[];
+  }) => {
+    setViewState('welcome');
+    onPreferencesComplete?.(prefs);
+  }, [onPreferencesComplete]);
+
+  const handleSkipPreferences = useCallback(() => {
+    setViewState('welcome');
+  }, []);
+
+  const renderContent = () => {
+    if (isLoading) {
+      return (
+        <div className="flex items-center justify-center py-20">
+          <div className="size-8 animate-spin rounded-full border-2 border-zinc-600 border-t-teal-500" />
+        </div>
+      );
+    }
+
+    // Show chat if there are messages
+    if (messages.length > 0) {
+      return (
+        <>
+          <MessageList messages={messages} isTyping={isTyping} />
+          <div ref={bottomRef} />
+        </>
+      );
+    }
+
+    // No messages - show onboarding flow
+    switch (viewState) {
+      case 'preferences':
+        return (
+          <QuickPreferences
+            onComplete={handlePreferencesComplete}
+            onSkip={handleSkipPreferences}
+          />
+        );
+      case 'welcome':
+      default:
+        return (
+          <WelcomeScreen 
+            onStartConversation={handleStartConversation}
+            onPersonalize={handlePersonalize}
+            showPersonalizeOption={isNewUser}
+          />
+        );
+    }
+  };
 
   return (
     <div
@@ -69,25 +152,18 @@ export function ChatContainer({
       {/* Messages area */}
       <ScrollArea className="flex-1" ref={scrollRef}>
         <div className="mx-auto max-w-3xl">
-          {isLoading ? (
-            <div className="flex items-center justify-center py-20">
-              <div className="size-8 animate-spin rounded-full border-2 border-zinc-600 border-t-teal-500" />
-            </div>
-          ) : (
-            <>
-              <MessageList messages={messages} isTyping={isTyping} />
-              <div ref={bottomRef} />
-            </>
-          )}
+          {renderContent()}
         </div>
       </ScrollArea>
 
-      {/* Input area - fixed at bottom */}
-      <ChatInput
-        onSend={onSendMessage}
-        disabled={disabled || isTyping || isLoading}
-        className="shrink-0"
-      />
+      {/* Input area - fixed at bottom, hidden during preferences */}
+      {viewState !== 'preferences' && (
+        <ChatInput
+          onSend={handleStartConversation}
+          disabled={disabled || isTyping || isLoading}
+          className="shrink-0"
+        />
+      )}
     </div>
   );
 }

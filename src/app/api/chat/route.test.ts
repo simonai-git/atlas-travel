@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { NextRequest } from 'next/server';
 
 // Mock the Anthropic SDK
 vi.mock('@anthropic-ai/sdk', () => {
@@ -35,6 +36,12 @@ vi.mock('@/lib/prompts/system-prompt', () => ({
   buildSystemPrompt: vi.fn().mockReturnValue('You are Atlas, a travel assistant.'),
 }));
 
+// Mock preference extractor
+vi.mock('@/lib/profile/preference-extractor', () => ({
+  extractPreferencesFromMessage: vi.fn().mockReturnValue({ confidence: 0 }),
+  mergeIntoProfile: vi.fn().mockReturnValue({}),
+}));
+
 // Set environment variable
 vi.stubEnv('ANTHROPIC_API_KEY', 'test-api-key');
 
@@ -46,13 +53,13 @@ describe('Chat API Route', () => {
   it('should reject requests without a message', async () => {
     const { POST } = await import('./route');
     
-    const request = new Request('http://localhost:3000/api/chat', {
+    const request = new NextRequest('http://localhost:3000/api/chat', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({}),
     });
 
-    const response = await POST(request as any);
+    const response = await POST(request);
     expect(response.status).toBe(400);
     
     const data = await response.json();
@@ -62,13 +69,13 @@ describe('Chat API Route', () => {
   it('should reject requests with empty message', async () => {
     const { POST } = await import('./route');
     
-    const request = new Request('http://localhost:3000/api/chat', {
+    const request = new NextRequest('http://localhost:3000/api/chat', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ message: '   ' }),
     });
 
-    const response = await POST(request as any);
+    const response = await POST(request);
     expect(response.status).toBe(400);
     
     const data = await response.json();
@@ -78,13 +85,13 @@ describe('Chat API Route', () => {
   it('should reject invalid JSON', async () => {
     const { POST } = await import('./route');
     
-    const request = new Request('http://localhost:3000/api/chat', {
+    const request = new NextRequest('http://localhost:3000/api/chat', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: 'not json',
     });
 
-    const response = await POST(request as any);
+    const response = await POST(request);
     expect(response.status).toBe(400);
     
     const data = await response.json();
@@ -94,13 +101,13 @@ describe('Chat API Route', () => {
   it('should return SSE stream for valid request', async () => {
     const { POST } = await import('./route');
     
-    const request = new Request('http://localhost:3000/api/chat', {
+    const request = new NextRequest('http://localhost:3000/api/chat', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ message: 'Hello, can you help me plan a trip?' }),
     });
 
-    const response = await POST(request as any);
+    const response = await POST(request);
     expect(response.status).toBe(200);
     expect(response.headers.get('Content-Type')).toBe('text/event-stream');
   });

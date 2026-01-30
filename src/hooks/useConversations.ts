@@ -4,12 +4,6 @@ import { useState, useCallback, useEffect } from 'react';
 import type { Message } from '@/types';
 import type { ConversationItem } from '@/components/sidebar';
 
-interface ConversationData {
-  id: string;
-  title: string;
-  messages: Message[];
-}
-
 interface UseConversationsReturn {
   // Conversation list
   conversations: ConversationItem[];

@@ -3,7 +3,7 @@
 import { useState, useCallback, useEffect } from 'react';
 import { ChatContainer } from '@/components/chat';
 import { ConversationSidebar, MobileDrawerTrigger } from '@/components/sidebar';
-import { useConversations, generateTitleFromMessage } from '@/hooks';
+import { useConversations, generateTitleFromMessage, useWelcomeFlow, formatPreferencesContext } from '@/hooks';
 import type { Message } from '@/types';
 
 // Demo responses for the travel agent
@@ -13,6 +13,51 @@ const demoResponses = [
   "Great choice! Let me put together a sample itinerary for you. What dates are you thinking, and how many travelers will be joining?",
   "I've noted that down! Here's a preliminary 7-day itinerary I'd suggest:\n\n**Day 1-2:** Arrive and explore the local area\n**Day 3-4:** Cultural excursions and guided tours\n**Day 5-6:** Adventure activities and hidden gems\n**Day 7:** Relaxation and departure\n\nWould you like me to add specific activities or adjust anything?",
 ];
+
+// Personalized first response based on user preferences
+function getPersonalizedGreeting(preferences: {
+  budget?: 'budget' | 'moderate' | 'luxury';
+  travelStyle?: 'solo' | 'couple' | 'family' | 'friends';
+  interests?: ('relaxation' | 'adventure' | 'culture' | 'nightlife')[];
+}): string {
+  const parts: string[] = [];
+  
+  if (preferences.budget) {
+    const budgetText = {
+      budget: "I'll focus on great value destinations",
+      moderate: "I'll find you the best balance of quality and value",
+      luxury: "I'll suggest premium experiences and accommodations",
+    };
+    parts.push(budgetText[preferences.budget]);
+  }
+  
+  if (preferences.travelStyle) {
+    const styleText = {
+      solo: "perfect for solo exploration",
+      couple: "ideal for romantic getaways",
+      family: "with family-friendly activities",
+      friends: "great for group adventures",
+    };
+    parts.push(styleText[preferences.travelStyle]);
+  }
+  
+  if (preferences.interests && preferences.interests.length > 0) {
+    const interestLabels = {
+      relaxation: 'relaxation',
+      adventure: 'adventure',
+      culture: 'cultural experiences',
+      nightlife: 'nightlife',
+    };
+    const interests = preferences.interests.map(i => interestLabels[i]).join(', ');
+    parts.push(`focusing on ${interests}`);
+  }
+
+  if (parts.length === 0) {
+    return "I'd love to help you plan your trip! Could you tell me more about what kind of experience you're looking for?";
+  }
+  
+  return `Thanks for sharing your preferences! ${parts.join(', ')}. Now, tell me about your dream destination or what kind of trip you're looking for!`;
+}
 
 export default function Home() {
   const {
@@ -28,6 +73,12 @@ export default function Home() {
     updateTitle,
     clearCurrentConversation,
   } = useConversations();
+
+  const {
+    isNewUser,
+    preferences,
+    completePreferences,
+  } = useWelcomeFlow();
 
   const [localMessages, setLocalMessages] = useState<Message[]>([]);
   const [isTyping, setIsTyping] = useState(false);
@@ -111,6 +162,21 @@ export default function Home() {
     await deleteConversation(id);
   }, [deleteConversation]);
 
+  const handlePreferencesComplete = useCallback((prefs: {
+    budget?: 'budget' | 'moderate' | 'luxury';
+    travelStyle?: 'solo' | 'couple' | 'family' | 'friends';
+    interests?: ('relaxation' | 'adventure' | 'culture' | 'nightlife')[];
+  }) => {
+    // Save preferences
+    completePreferences(prefs);
+    
+    // Log the context that would be used for AI
+    const context = formatPreferencesContext(prefs);
+    if (context) {
+      console.log('User preferences context:', context);
+    }
+  }, [completePreferences]);
+
   return (
     <main className="dark flex h-screen">
       {/* Desktop Sidebar */}
@@ -130,6 +196,8 @@ export default function Home() {
           onSendMessage={handleSendMessage}
           isTyping={isTyping}
           isLoading={isLoadingConversation}
+          isNewUser={isNewUser}
+          onPreferencesComplete={handlePreferencesComplete}
           mobileMenuTrigger={
             <MobileDrawerTrigger
               conversations={conversations}
