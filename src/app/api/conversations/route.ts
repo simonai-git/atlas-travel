@@ -10,6 +10,12 @@ const DEMO_USER_EMAIL = 'demo@atlas-travel.com';
 
 // GET /api/conversations - List all conversations
 export async function GET(request: NextRequest) {
+  // Check if database is configured
+  if (!process.env.DATABASE_URL) {
+    // Return empty list for development without database
+    return NextResponse.json({ conversations: [] });
+  }
+  
   try {
     // Get or create demo user
     const user = await getOrCreateUser(DEMO_USER_EMAIL);

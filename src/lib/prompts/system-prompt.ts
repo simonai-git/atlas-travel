@@ -200,6 +200,40 @@ function buildProfileContext(profile: ProfileData): string {
   if (profile.travel_style) {
     lines.push(`- Travel style: ${profile.travel_style}`);
   }
+
+  // Budget information
+  if (profile.budget) {
+    if (profile.budget.daily_amount && profile.budget.currency) {
+      lines.push(`- Budget: ~${profile.budget.currency}${profile.budget.daily_amount}/day (${profile.budget.level || 'unspecified'} tier)`);
+    } else if (profile.budget.level) {
+      lines.push(`- Budget level: ${profile.budget.level}`);
+    }
+  }
+
+  // Family/travel companion information
+  if (profile.family_info) {
+    const parts: string[] = [];
+    if (profile.family_info.travel_type) {
+      parts.push(`Travel type: ${profile.family_info.travel_type}`);
+    }
+    if (profile.family_info.size) {
+      parts.push(`${profile.family_info.size} travelers total`);
+    }
+    if (profile.family_info.adults) {
+      parts.push(`${profile.family_info.adults} adult${profile.family_info.adults > 1 ? 's' : ''}`);
+    }
+    if (profile.family_info.children) {
+      const childStr = `${profile.family_info.children} child${profile.family_info.children > 1 ? 'ren' : ''}`;
+      if (profile.family_info.child_ages?.length) {
+        parts.push(`${childStr} (ages: ${profile.family_info.child_ages.join(', ')})`);
+      } else {
+        parts.push(childStr);
+      }
+    }
+    if (parts.length > 0) {
+      lines.push(`- Travel group: ${parts.join(', ')}`);
+    }
+  }
   
   if (profile.preferred_currency) {
     lines.push(`- Preferred currency: ${profile.preferred_currency}`);

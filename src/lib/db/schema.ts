@@ -93,6 +93,19 @@ export interface ProfileData {
   frequent_flyer_programs?: { airline: string; number: string }[];
   interests?: string[];
   avoided_destinations?: string[];
+  // Extended fields for budget and family
+  budget?: {
+    level?: 'budget' | 'mid-range' | 'luxury';
+    daily_amount?: number;
+    currency?: string;
+  };
+  family_info?: {
+    size?: number;
+    adults?: number;
+    children?: number;
+    child_ages?: number[];
+    travel_type?: 'solo' | 'couple' | 'family' | 'group';
+  };
 }
 
 // ============================================================================

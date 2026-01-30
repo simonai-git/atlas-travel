@@ -2,23 +2,22 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 
 // Mock the Anthropic SDK
 vi.mock('@anthropic-ai/sdk', () => {
-  return {
-    default: vi.fn().mockImplementation(() => ({
-      messages: {
-        stream: vi.fn().mockImplementation(async function* () {
-          yield {
-            type: 'content_block_delta',
-            delta: { text: 'Hello! ' },
-          };
-          yield {
-            type: 'content_block_delta',
-            delta: { text: "I'm Atlas." },
-          };
-          yield { type: 'message_stop' };
-        }),
-      },
-    })),
+  const MockAnthropic = class {
+    messages = {
+      stream: vi.fn().mockImplementation(async function* () {
+        yield {
+          type: 'content_block_delta',
+          delta: { text: 'Hello! ' },
+        };
+        yield {
+          type: 'content_block_delta',
+          delta: { text: "I'm Atlas." },
+        };
+        yield { type: 'message_stop' };
+      }),
+    };
   };
+  return { default: MockAnthropic };
 });
 
 // Mock the database functions

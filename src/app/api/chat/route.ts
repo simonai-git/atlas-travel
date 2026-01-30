@@ -5,12 +5,17 @@ import {
   getConversationById,
   getRecentMessages,
   getProfileByUserId,
+  createOrUpdateProfile,
   createMessage,
   createConversation,
   getUserById,
   type Message,
   type ProfileData,
 } from '@/lib/db/schema';
+import {
+  extractPreferencesFromMessage,
+  mergeIntoProfile,
+} from '@/lib/profile/preference-extractor';
 
 // ============================================================================
 // Types
@@ -166,6 +171,23 @@ export async function POST(request: NextRequest) {
             await createMessage(actualConversationId, 'user', message.trim());
           } catch (error) {
             console.error('Failed to save user message:', error);
+          }
+        }
+
+        // Extract preferences from user message and update profile
+        if (userId) {
+          try {
+            const extracted = extractPreferencesFromMessage(message.trim());
+            if (extracted.confidence > 0) {
+              // There are some preferences to save
+              const updatedProfile = mergeIntoProfile(profileData, extracted);
+              await createOrUpdateProfile(userId, updatedProfile);
+              // Update profileData for current context
+              profileData = updatedProfile;
+            }
+          } catch (error) {
+            console.error('Failed to extract/update preferences:', error);
+            // Non-critical - continue with chat
           }
         }
 
