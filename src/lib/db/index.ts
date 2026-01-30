@@ -21,3 +21,6 @@ export async function getClient() {
 }
 
 export default pool;
+
+// Re-export all schema types and functions for convenience
+export * from './schema';
