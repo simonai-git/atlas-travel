@@ -38,7 +38,10 @@ Let me know if you'd like more options!`;
     
     if (result.segments[1].type === 'card') {
       expect(result.segments[1].cardType).toBe('hotel');
-      expect(result.segments[1].data.name).toBe('Grand Hotel Paris');
+      const cardData = result.segments[1].data;
+      if (cardData.type === 'hotel') {
+        expect(cardData.name).toBe('Grand Hotel Paris');
+      }
     }
   });
 
@@ -53,7 +56,10 @@ Let me know if you'd like more options!`;
     
     if (result.segments[0].type === 'card') {
       expect(result.segments[0].cardType).toBe('flight');
-      expect(result.segments[0].data.airline).toBe('United Airlines');
+      const cardData = result.segments[0].data;
+      if (cardData.type === 'flight') {
+        expect(cardData.airline).toBe('United Airlines');
+      }
     }
   });
 
@@ -67,7 +73,10 @@ Let me know if you'd like more options!`;
     
     if (result.segments[0].type === 'card') {
       expect(result.segments[0].cardType).toBe('activity');
-      expect(result.segments[0].data.name).toBe('Eiffel Tower Tour');
+      const cardData = result.segments[0].data;
+      if (cardData.type === 'activity') {
+        expect(cardData.name).toBe('Eiffel Tower Tour');
+      }
     }
   });
 
