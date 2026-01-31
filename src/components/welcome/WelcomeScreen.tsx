@@ -1,59 +1,14 @@
 'use client';
 
-import { useState } from 'react';
 import { cn } from '@/lib/utils';
 import { 
   Plane, 
   MapPin, 
   Compass, 
-  Palmtree, 
-  Mountain, 
-  Building2, 
-  Utensils,
   Sparkles,
-  ChevronRight,
   Globe,
   Settings2,
 } from 'lucide-react';
-
-interface StarterPrompt {
-  id: string;
-  icon: React.ReactNode;
-  title: string;
-  prompt: string;
-  gradient: string;
-}
-
-const starterPrompts: StarterPrompt[] = [
-  {
-    id: 'beach',
-    icon: <Palmtree className="size-5" />,
-    title: 'Beach Getaway',
-    prompt: "I'm looking for a relaxing beach vacation with crystal clear water and great snorkeling spots",
-    gradient: 'from-cyan-500 to-blue-600',
-  },
-  {
-    id: 'adventure',
-    icon: <Mountain className="size-5" />,
-    title: 'Adventure Trip',
-    prompt: "I want an adventure-packed trip with hiking, outdoor activities, and stunning natural scenery",
-    gradient: 'from-emerald-500 to-teal-600',
-  },
-  {
-    id: 'city',
-    icon: <Building2 className="size-5" />,
-    title: 'City Explorer',
-    prompt: "I'd like to explore a vibrant city with rich history, museums, and great nightlife",
-    gradient: 'from-purple-500 to-pink-600',
-  },
-  {
-    id: 'food',
-    icon: <Utensils className="size-5" />,
-    title: 'Culinary Journey',
-    prompt: "Plan me a food-focused trip where I can experience authentic local cuisine and cooking classes",
-    gradient: 'from-orange-500 to-red-600',
-  },
-];
 
 interface WelcomeScreenProps {
   onStartConversation: (prompt: string) => void;
@@ -63,21 +18,13 @@ interface WelcomeScreenProps {
 }
 
 export function WelcomeScreen({ 
-  onStartConversation, 
+  onStartConversation: _onStartConversation,
   onPersonalize,
   showPersonalizeOption = true,
   className 
 }: WelcomeScreenProps) {
-  const [selectedPrompt, setSelectedPrompt] = useState<string | null>(null);
-
-  const handlePromptClick = (prompt: StarterPrompt) => {
-    setSelectedPrompt(prompt.id);
-    // Small delay for visual feedback before sending
-    setTimeout(() => {
-      onStartConversation(prompt.prompt);
-    }, 150);
-  };
-
+  // onStartConversation kept for API compatibility but no longer used
+  void _onStartConversation;
   return (
     <div className={cn('flex flex-col items-center justify-center min-h-[60vh] px-4 py-8', className)}>
       {/* Hero Section */}
@@ -132,58 +79,10 @@ export function WelcomeScreen({
         </div>
       )}
 
-      {/* Starter Prompts */}
-      <div className="w-full max-w-2xl">
-        <p className="text-sm text-zinc-500 text-center mb-4">
-          {showPersonalizeOption ? 'Or jump right in with one of these' : 'Try one of these to get started'}
-        </p>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          {starterPrompts.map((prompt) => (
-            <button
-              key={prompt.id}
-              onClick={() => handlePromptClick(prompt)}
-              disabled={selectedPrompt !== null}
-              className={cn(
-                'group relative flex items-center gap-4 p-4 rounded-xl',
-                'bg-zinc-800/50 border border-zinc-700/50',
-                'hover:bg-zinc-800 hover:border-zinc-600 hover:shadow-lg',
-                'transition-all duration-200',
-                'text-left',
-                selectedPrompt === prompt.id && 'ring-2 ring-teal-500 bg-zinc-800',
-                selectedPrompt !== null && selectedPrompt !== prompt.id && 'opacity-50'
-              )}
-            >
-              {/* Icon */}
-              <div className={cn(
-                'flex size-12 shrink-0 items-center justify-center rounded-xl',
-                'bg-gradient-to-br shadow-lg',
-                prompt.gradient,
-                'group-hover:scale-105 transition-transform'
-              )}>
-                <span className="text-white">{prompt.icon}</span>
-              </div>
-              
-              {/* Content */}
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-zinc-200 mb-0.5">
-                  {prompt.title}
-                </p>
-                <p className="text-xs text-zinc-500 line-clamp-2">
-                  {prompt.prompt}
-                </p>
-              </div>
-              
-              {/* Arrow */}
-              <ChevronRight className="size-4 text-zinc-600 group-hover:text-zinc-400 group-hover:translate-x-0.5 transition-all shrink-0" />
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* Custom Prompt Hint */}
+      {/* Prompt Hint */}
       <div className="mt-8 text-center">
-        <p className="text-xs text-zinc-600">
-          Or just type your own question below ↓
+        <p className="text-sm text-zinc-500">
+          Start typing below to plan your next adventure ↓
         </p>
       </div>
     </div>
