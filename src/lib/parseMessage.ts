@@ -6,7 +6,7 @@
  * Card Marker Format:
  * [CARD:type]{...json...}[/CARD]
  * 
- * Supported types: hotel, flight, activity
+ * Supported types: hotel, flight
  * 
  * Example:
  * "Here's a great hotel for you:
@@ -17,8 +17,7 @@
 import type { 
   TravelCard, 
   HotelCard, 
-  FlightCard, 
-  ActivityCard 
+  FlightCard 
 } from '@/lib/db/schema';
 
 // ============================================================================
@@ -34,7 +33,7 @@ export interface TextSegment {
 
 export interface CardSegment {
   type: 'card';
-  cardType: 'hotel' | 'flight' | 'activity';
+  cardType: 'hotel' | 'flight';
   data: TravelCard;
 }
 
@@ -76,16 +75,6 @@ function isValidFlightCard(data: unknown): data is FlightCard {
   );
 }
 
-function isValidActivityCard(data: unknown): data is ActivityCard {
-  if (typeof data !== 'object' || data === null) return false;
-  const obj = data as Record<string, unknown>;
-  return (
-    obj.type === 'activity' &&
-    typeof obj.name === 'string' &&
-    typeof obj.location === 'string'
-  );
-}
-
 function validateCard(type: string, data: unknown): TravelCard | null {
   switch (type) {
     case 'hotel':
@@ -93,9 +82,6 @@ function validateCard(type: string, data: unknown): TravelCard | null {
       break;
     case 'flight':
       if (isValidFlightCard(data)) return data;
-      break;
-    case 'activity':
-      if (isValidActivityCard(data)) return data;
       break;
   }
   return null;
@@ -106,7 +92,7 @@ function validateCard(type: string, data: unknown): TravelCard | null {
 // ============================================================================
 
 // Regex pattern for card markers: [CARD:type]{...json...}[/CARD]
-const CARD_PATTERN = /\[CARD:(hotel|flight|activity)\]([\s\S]*?)\[\/CARD\]/g;
+const CARD_PATTERN = /\[CARD:(hotel|flight)\]([\s\S]*?)\[\/CARD\]/g;
 
 /**
  * Parse a message string into segments of text and cards.
@@ -148,7 +134,7 @@ export function parseMessage(content: string): ParseResult {
       if (validatedCard) {
         segments.push({
           type: 'card',
-          cardType: cardType as 'hotel' | 'flight' | 'activity',
+          cardType: cardType as 'hotel' | 'flight',
           data: validatedCard,
         });
         cardCount++;

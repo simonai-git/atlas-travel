@@ -6,7 +6,7 @@ import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import type { Message } from '@/types';
 import { Plane, User } from 'lucide-react';
 import { parseMessage, type CardSegment } from '@/lib/parseMessage';
-import { HotelCard, FlightCard, ActivityCard } from '@/components/cards';
+import { HotelCard, FlightCard } from '@/components/cards';
 import type { TravelCard } from '@/lib/db/schema';
 
 interface MessageBubbleProps {
@@ -66,8 +66,6 @@ function TravelCardRenderer({ card }: { card: TravelCard }) {
       return <HotelCard data={card} className="w-full max-w-sm" />;
     case 'flight':
       return <FlightCard data={card} className="w-full max-w-sm" />;
-    case 'activity':
-      return <ActivityCard data={card} className="w-full max-w-sm" />;
     default:
       return null;
   }

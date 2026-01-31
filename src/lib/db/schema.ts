@@ -32,7 +32,7 @@ export interface EmbeddedContent {
   cards?: TravelCard[];
 }
 
-export type TravelCard = HotelCard | FlightCard | ActivityCard;
+export type TravelCard = HotelCard | FlightCard;
 
 export interface HotelCard {
   type: 'hotel';
@@ -60,19 +60,6 @@ export interface FlightCard {
   currency: string;
   booking_url?: string;
   cabin_class?: string;
-}
-
-export interface ActivityCard {
-  type: 'activity';
-  name: string;
-  location: string;
-  description?: string;
-  price?: number;
-  currency?: string;
-  duration?: string;
-  rating?: number;
-  image_url?: string;
-  booking_url?: string;
 }
 
 export interface UserProfile {
